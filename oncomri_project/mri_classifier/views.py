@@ -14,7 +14,7 @@ def home(request):
 # =====================
 # Upload View (Doctor Only)
 # =====================
-@role_required('doctor')
+@login_required
 def upload_image(request):
     if request.method == 'POST':
         form = MRIImageForm(request.POST, request.FILES)
@@ -57,3 +57,12 @@ def my_reports(request):
         reports = MRIImage.objects.filter(user=request.user).order_by('-uploaded_at')
 
     return render(request, 'mri_classifier/my_reports.html', {'reports': reports})
+
+
+from django.contrib.auth.decorators import login_required
+from .models import MRIImage
+
+@login_required
+def report_history(request):
+    images = MRIImage.objects.filter(user=request.user).order_by('-uploaded_at')
+    return render(request, 'mri_classifier/history.html', {'images': images})

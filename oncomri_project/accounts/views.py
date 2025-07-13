@@ -62,3 +62,39 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+
+
+from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_required
+from django.conf import settings
+
+@login_required
+def dashboard_redirect(request):
+    user = request.user
+    if user.role == 'doctor':
+        return redirect('doctor_dashboard')
+    elif user.role == 'radiologist':
+        return redirect('radiologist_dashboard')
+    elif user.role == 'patient':
+        return redirect('patient_dashboard')
+    elif user.is_superuser:
+        return redirect('/admin/')
+    else:
+        return redirect('/')
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required, user_passes_test
+
+@login_required
+def doctor_dashboard(request):
+    return render(request, 'accounts/dashboard_doctor.html')
+
+@login_required
+def radiologist_dashboard(request):
+    return render(request, 'accounts/dashboard_radiologist.html')
+
+@login_required
+def patient_dashboard(request):
+    return render(request, 'accounts/dashboard_patient.html')

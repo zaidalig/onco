@@ -5,11 +5,11 @@ from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
-    path('', views.home, name='home'),
-    path('upload/', views.upload_image, name='upload'),
-    path('report/<int:pk>/', views.report, name='report'),
-    path('my-reports/', views.my_reports, name='my_reports'),
-
+    path("", views.home, name="home"),
+    path("upload/", views.upload_image, name="upload"),
+    path("report/<int:pk>/", views.report, name="report"),
+    path("my-reports/", views.my_reports, name="my_reports"),
+    path("history/", views.report_history, name="report_history"),  # 👈 New
 ]
 
 
