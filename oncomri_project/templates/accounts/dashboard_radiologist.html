@@ -1,40 +1,70 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="text-center mt-5">
-  <h2 class="text-info">Welcome, {{ user.username }}!</h2>
-  <p class="lead">
-    This is your <strong>{{ user.role|title }} Dashboard</strong>.
-  </p>
+<div class="container mt-4">
+  <div class="text-center mb-4">
+    <h2 class="text-theme">Welcome, {{ user.username }}!</h2>
+    <p class="lead">This is your <strong>Radiologist Dashboard</strong>.</p>
+    <a href="{% url 'upload' %}" class="btn btn-theme mb-3"><i class="bi bi-upload"></i> Upload MRI</a>
+  </div>
 
-  {% if user.role == 'doctor' %}
-    <div class="mt-4">
-      <a href="{% url 'patient_list' %}" class="btn btn-outline-primary me-2">
-        <i class="bi bi-person-lines-fill"></i> View Patients
-      </a>
-      <a href="{% url 'doctor_reports' %}" class="btn btn-outline-success">
-        <i class="bi bi-clipboard-data"></i> Review Reports
-      </a>
+  <form method="get" class="row g-3 justify-content-center mb-4">
+    <div class="col-md-4">
+      <input type="text" name="q" class="form-control" placeholder="Search prediction..." value="{{ query }}">
+    </div>
+    <div class="col-md-3">
+      <select name="prediction" class="form-select">
+        <option value="">All Predictions</option>
+        {% for p in predictions %}
+          <option value="{{ p }}" {% if p == prediction_filter %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-theme w-100"><i class="bi bi-search"></i> Filter</button>
+    </div>
+  </form>
+
+  {% if page_obj %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      {% for img in page_obj %}
+        <div class="col">
+          <div class="card shadow-sm h-100">
+            <img src="{{ img.image.url }}" class="card-img-top" alt="MRI Image">
+            <div class="card-body">
+              <h5 class="card-title">Prediction: {{ img.prediction }}</h5>
+              <p class="card-text small text-muted">
+                Confidence: {{ img.confidence }}%<br>
+                Uploaded: {{ img.uploaded_at|date:"M d, Y H:i" }}
+              </p>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
     </div>
 
-  {% elif user.role == 'radiologist' %}
-    <div class="mt-4">
-      <a href="{% url 'upload' %}" class="btn btn-outline-primary me-2">
-        <i class="bi bi-upload"></i> Upload MRI
-      </a>
-      <a href="{% url 'report_history' %}" class="btn btn-outline-secondary">
-        <i class="bi bi-clock-history"></i> View Uploaded Reports
-      </a>
+    <div class="mt-4 d-flex justify-content-center">
+      <nav>
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ query }}&prediction={{ prediction_filter }}">Previous</a>
+            </li>
+          {% endif %}
+          {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+              <a class="page-link" href="?page={{ num }}&q={{ query }}&prediction={{ prediction_filter }}">{{ num }}</a>
+            </li>
+          {% endfor %}
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ query }}&prediction={{ prediction_filter }}">Next</a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
     </div>
-
-  {% elif user.role == 'patient' %}
-    <div class="mt-4">
-      <a href="{% url 'upload' %}" class="btn btn-outline-primary me-2">
-        <i class="bi bi-upload"></i> Upload MRI Image
-      </a>
-      <a href="{% url 'report_history' %}" class="btn btn-outline-secondary">
-        <i class="bi bi-journal-text"></i> View Reports
-      </a>
-    </div>
+  {% else %}
+    <div class="alert alert-warning text-center mt-4">No reports found.</div>
   {% endif %}
 </div>
 {% endblock %}

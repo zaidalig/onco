@@ -1,28 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container mt-4">
-  <h3 class="mb-4 text-primary text-center">Your MRI Report History</h3>
-
+<div class="container">
+  <h3 class="text-center mb-4">Your MRI Report History</h3>
   {% if images %}
-    <div class="row row-cols-1 row-cols-md-2 g-4">
-      {% for img in images %}
-        <div class="col">
-          <div class="card h-100 shadow-sm">
-            <img src="{{ img.image.url }}" class="card-img-top" alt="MRI Image">
-            <div class="card-body">
-              <h5 class="card-title text-success">{{ img.prediction }}</h5>
-              <p class="card-text">
-                <strong>Confidence:</strong> {{ img.confidence|floatformat:2 }}%<br>
-                <strong>Uploaded:</strong> {{ img.created_at|date:"M d, Y H:i" }}
-              </p>
-              <a href="{% url 'report' img.pk %}" class="btn btn-outline-primary btn-sm">View Report</a>
-            </div>
-          </div>
-        </div>
-      {% endfor %}
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Image</th>
+            <th>Prediction</th>
+            <th>Confidence</th>
+            <th>Uploaded At</th>
+            <th>Report</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for image in images %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td><img src="{{ image.image.url }}" alt="MRI" width="80"></td>
+            <td>{{ image.prediction }}</td>
+            <td>{{ image.confidence|floatformat:2 }}%</td>
+            <td>{{ image.uploaded_at|date:"Y-m-d H:i" }}</td>
+            <td><a href="{% url 'report' image.pk %}" class="btn btn-sm btn-info">View</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   {% else %}
-    <p class="text-muted text-center">No MRI reports found.</p>
+    <p class="text-muted text-center">No reports found.</p>
   {% endif %}
 </div>
 {% endblock %}

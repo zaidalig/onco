@@ -70,31 +70,121 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
 @login_required
+@login_required
 def dashboard_redirect(request):
-    user = request.user
-    if user.role == 'doctor':
+    role = get_user_role(request.user)
+    if role == 'doctor':
         return redirect('doctor_dashboard')
-    elif user.role == 'radiologist':
+    elif role == 'radiologist':
         return redirect('radiologist_dashboard')
-    elif user.role == 'patient':
+    elif role == 'patient':
         return redirect('patient_dashboard')
-    elif user.is_superuser:
+    elif role == 'admin':
         return redirect('/admin/')
     else:
         return redirect('/')
 
 
+
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, user_passes_test
 
-@login_required
+def is_doctor(user):
+    return user.is_authenticated and user.role == 'doctor'
+
+from django.core.paginator import Paginator
+from django.db.models import Q
+from mri_classifier.models import MRIImage  # ✅ Add this line
+
+@user_passes_test(is_doctor)
 def doctor_dashboard(request):
-    return render(request, 'accounts/dashboard_doctor.html')
+    query = request.GET.get('q', '')
+    prediction_filter = request.GET.get('prediction', '')
+
+    images = MRIImage.objects.all()
+
+    if query:
+        images = images.filter(
+            Q(user__username__icontains=query) | Q(prediction__icontains=query)
+        )
+
+    if prediction_filter:
+        images = images.filter(prediction__iexact=prediction_filter)
+
+    images = images.order_by('-uploaded_at')
+
+    paginator = Paginator(images, 6)  # 6 per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    predictions = MRIImage.objects.values_list('prediction', flat=True).distinct()
+
+    return render(request, 'accounts/dashboard_doctor.html', {
+        'page_obj': page_obj,
+        'query': query,
+        'prediction_filter': prediction_filter,
+        'predictions': predictions,
+    })
+
+
 
 @login_required
 def radiologist_dashboard(request):
-    return render(request, 'accounts/dashboard_radiologist.html')
+    query = request.GET.get('q', '')
+    prediction_filter = request.GET.get('prediction', '')
+
+    images = MRIImage.objects.filter(user=request.user)
+
+    if query:
+        images = images.filter(prediction__icontains=query)
+
+    if prediction_filter:
+        images = images.filter(prediction__iexact=prediction_filter)
+
+    images = images.order_by('-uploaded_at')
+
+    paginator = Paginator(images, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    predictions = MRIImage.objects.filter(user=request.user).values_list('prediction', flat=True).distinct()
+
+    return render(request, 'accounts/dashboard_radiologist.html', {
+        'page_obj': page_obj,
+        'query': query,
+        'prediction_filter': prediction_filter,
+        'predictions': predictions,
+    })
+
+
+from django.core.paginator import Paginator
+from django.db.models import Q
+from mri_classifier.models import MRIImage
 
 @login_required
 def patient_dashboard(request):
-    return render(request, 'accounts/dashboard_patient.html')
+    query = request.GET.get('q', '')
+    prediction_filter = request.GET.get('prediction', '')
+
+    images = MRIImage.objects.filter(user=request.user)
+
+    if query:
+        images = images.filter(prediction__icontains=query)
+
+    if prediction_filter:
+        images = images.filter(prediction__iexact=prediction_filter)
+
+    images = images.order_by('-uploaded_at')
+
+    paginator = Paginator(images, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    predictions = MRIImage.objects.filter(user=request.user).values_list('prediction', flat=True).distinct()
+
+    return render(request, 'accounts/dashboard_patient.html', {
+        'page_obj': page_obj,
+        'query': query,
+        'prediction_filter': prediction_filter,
+        'predictions': predictions,
+    })
