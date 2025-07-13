@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="col-md-6 offset-md-3">
+  <div class="card">
+    <div class="card-body">
+      <h4 class="mb-4 text-center text-primary">Upload Medical Report (PDF)</h4>
+
+      <!-- Show Django messages -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data" id="uploadForm">
+        {% csrf_token %}
+
+        <!-- Dropzone -->
+        <div id="dropzone" class="border border-secondary rounded p-4 text-center mb-3" style="cursor: pointer;">
+          <p class="mb-2">Drag & drop a medical report PDF here or click to browse</p>
+          <input type="file" id="id_file" name="file" hidden accept="application/pdf">
+          <div id="fileName" class="text-muted small">No file selected</div>
+        </div>
+
+        <!-- Patient Name Field -->
+        <div class="mb-3">
+          {{ form.patient_name.label_tag }}
+          {{ form.patient_name }}
+        </div>
+
+        <!-- Submit Button -->
+        <div class="d-grid">
+          <button type="submit" class="btn btn-success">Upload Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('id_file');
+  const fileNameDisplay = document.getElementById('fileName');
+
+  dropzone.addEventListener('click', () => fileInput.click());
+
+  dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('bg-light');
+  });
+
+  dropzone.addEventListener('dragleave', () => {
+    dropzone.classList.remove('bg-light');
+  });
+
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('bg-light');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      const file = files[0];
+      if (file.type !== "application/pdf") {
+        alert("Only PDF files are allowed.");
+        return;
+      }
+      fileInput.files = files;
+      fileNameDisplay.textContent = file.name;
+    }
+  });
+
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (file && file.type !== 'application/pdf') {
+      alert("Please upload a valid PDF file.");
+      fileInput.value = "";
+      fileNameDisplay.textContent = "No file selected";
+      return;
+    }
+    fileNameDisplay.textContent = file ? file.name : 'No file selected';
+  });
+</script>
+{% endblock %}
