@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="col-md-6 offset-md-3">
+  <div class="card">
+    <div class="card-body">
+      <h4 class="mb-4 text-center text-primary">Upload MRI Image</h4>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="d-grid">
+          <button type="submit" class="btn btn-success">Analyze</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

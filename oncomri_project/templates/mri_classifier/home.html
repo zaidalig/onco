@@ -1,11 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="d-flex align-items-center justify-content-center" style="height: 70vh;">
   <div class="text-center">
-    <h2 class="text-primary">Welcome to OncoMRI Net</h2>
-    <p class="lead">AI-based MRI classification system for head and neck cancer detection.</p>
-    {% if not user.is_authenticated %}
-      <a href="{% url 'login' %}" class="btn btn-outline-primary">Login</a>
-      <a href="{% url 'register' %}" class="btn btn-outline-success ms-2">Register</a>
+    <h1 class="text-primary mb-3">Welcome to <strong>OncoMRI Net</strong></h1>
+    <p class="lead text-muted mb-4">
+      AI-Powered MRI Classification System for Head and Neck Cancer Detection
+    </p>
+
+    {% if user.is_authenticated %}
+      <a href="{% url 'upload' %}" class="btn btn-success btn-lg">Upload MRI Image</a>
+    {% else %}
+      <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg me-2">Login</a>
+      <a href="{% url 'register' %}" class="btn btn-outline-success btn-lg">Register</a>
     {% endif %}
   </div>
+</div>
 {% endblock %}
