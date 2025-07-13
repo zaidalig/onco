@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <h3 class="mb-4 text-center text-primary">My MRI Reports</h3>
+
+  {% if reports %}
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped align-middle text-center">
+        <thead class="table-dark">
+          <tr>
+            <th>Image</th>
+            <th>Prediction</th>
+            <th>Confidence</th>
+            <th>Uploaded At</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for image in reports %}
+            <tr>
+              <td><img src="{{ image.image.url }}" height="60"></td>
+              <td>{{ image.prediction }}</td>
+              <td>{{ image.confidence }}%</td>
+              <td>{{ image.uploaded_at|date:"M d, Y H:i" }}</td>
+              <td>
+                <a href="{% url 'report' image.pk %}" class="btn btn-sm btn-outline-primary">View Report</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="text-muted text-center">No reports found.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -8,15 +8,47 @@
         <h3 class="card-title mb-4 text-center text-primary">Create Your Account</h3>
         <form method="post" novalidate>
           {% csrf_token %}
-          {% for field in form %}
-            <div class="mb-3">
-              <label class="form-label">{{ field.label }}</label>
-              {{ field|add_class:"form-control rounded-3" }}
-              {% if field.errors %}
-                <div class="text-danger small">{{ field.errors|striptags }}</div>
-              {% endif %}
-            </div>
-          {% endfor %}
+
+          <div class="mb-3">
+            <label class="form-label">{{ form.username.label }}</label>
+            {{ form.username|add_class:"form-control rounded-3" }}
+            {% if form.username.errors %}
+              <div class="text-danger small">{{ form.username.errors|striptags }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">{{ form.email.label }}</label>
+            {{ form.email|add_class:"form-control rounded-3" }}
+            {% if form.email.errors %}
+              <div class="text-danger small">{{ form.email.errors|striptags }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">{{ form.password1.label }}</label>
+            {{ form.password1|add_class:"form-control rounded-3" }}
+            {% if form.password1.errors %}
+              <div class="text-danger small">{{ form.password1.errors|striptags }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">{{ form.password2.label }}</label>
+            {{ form.password2|add_class:"form-control rounded-3" }}
+            {% if form.password2.errors %}
+              <div class="text-danger small">{{ form.password2.errors|striptags }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">{{ form.role.label }}</label>
+            {{ form.role|add_class:"form-select rounded-3" }}
+            {% if form.role.errors %}
+              <div class="text-danger small">{{ form.role.errors|striptags }}</div>
+            {% endif %}
+          </div>
+
           <div class="d-grid">
             <button type="submit" class="btn btn-primary btn-lg rounded-3">Register</button>
           </div>
@@ -30,4 +62,3 @@
   </div>
 </div>
 {% endblock %}
-EOF
