@@ -9,22 +9,25 @@ from .models import MRIImage
 from .forms import MRIImageForm
 from ml_model.predict import predict
 
+from ml_model.predict import predict
+
 @login_required
 def upload_image(request):
     if request.method == 'POST':
         form = MRIImageForm(request.POST, request.FILES)
         if form.is_valid():
-            obj = form.save(commit=False)
-            obj.user = request.user
-            obj.save()
-            label, confidence = predict(obj.image.path)
-            obj.prediction = label
-            obj.confidence = confidence
-            obj.save()
-            return redirect('report', pk=obj.pk)
+            img = form.save(commit=False)
+            img.user = request.user
+            img.save()
+            label, confidence = predict(img.image.path)
+            img.prediction = label
+            img.confidence = confidence
+            img.save()
+            return redirect('report', pk=img.pk)
     else:
         form = MRIImageForm()
     return render(request, 'mri_classifier/upload.html', {'form': form})
+
 
 @login_required
 def report(request, pk):
