@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4 text-theme">Admin Dashboard</h2>
+
+  <div class="row text-center mb-4">
+    <div class="col-md-3">
+      <a href="{% url 'admin_patients' %}" class="text-decoration-none text-dark">
+        <div class="card shadow-sm p-3">
+          <h5>Patients</h5>
+          <h2>{{ total_patients }}</h2>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{% url 'admin_doctors' %}" class="text-decoration-none text-dark">
+        <div class="card shadow-sm p-3">
+          <h5>Doctors</h5>
+          <h2>{{ total_doctors }}</h2>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{% url 'admin_radiologists' %}" class="text-decoration-none text-dark">
+        <div class="card shadow-sm p-3">
+          <h5>Radiologists</h5>
+          <h2>{{ total_radiologists }}</h2>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{% url 'admin_reports' %}" class="text-decoration-none text-dark">
+        <div class="card shadow-sm p-3">
+          <h5>Reports</h5>
+          <h2>{{ total_reports }}</h2>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <h4 class="mt-5 mb-3">Recent MRI Reports</h4>
+  {% if recent_reports %}
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>Patient</th>
+            <th>Prediction</th>
+            <th>Confidence</th>
+            <th>Uploaded</th>
+            <th>Image</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for report in recent_reports %}
+          <tr>
+            <td>{{ report.user.username }}</td>
+            <td>{{ report.prediction }}</td>
+            <td>{{ report.confidence }}%</td>
+            <td>{{ report.uploaded_at|date:"M d, Y H:i" }}</td>
+            <td><img src="{{ report.image.url }}" width="60" class="img-thumbnail" /></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p>No reports available.</p>
+  {% endif %}
+</div>
+{% endblock %}

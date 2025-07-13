@@ -34,7 +34,9 @@
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
         <ul class="navbar-nav">
           {% if user.is_authenticated %}
-            {% if user.role == 'doctor' %}
+            {% if user.is_superuser %}
+              <li class="nav-item"><a class="nav-link" href="{% url 'admin_dashboard' %}"><i class="bi bi-speedometer2"></i> Admin Dashboard</a></li>
+            {% elif user.role == 'doctor' %}
               <li class="nav-item"><a class="nav-link" href="{% url 'doctor_dashboard' %}"><i class="bi bi-clipboard-heart"></i> Doctor Dashboard</a></li>
             {% elif user.role == 'radiologist' %}
               <li class="nav-item"><a class="nav-link" href="{% url 'radiologist_dashboard' %}"><i class="bi bi-eyeglasses"></i> Radiologist Dashboard</a></li>

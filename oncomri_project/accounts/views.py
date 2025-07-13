@@ -70,7 +70,6 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
 @login_required
-@login_required
 def dashboard_redirect(request):
     role = get_user_role(request.user)
     if role == 'doctor':
@@ -80,7 +79,7 @@ def dashboard_redirect(request):
     elif role == 'patient':
         return redirect('patient_dashboard')
     elif role == 'admin':
-        return redirect('/admin/')
+        return redirect('admin_dashboard')
     else:
         return redirect('/')
 
@@ -91,6 +90,9 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 
 def is_doctor(user):
     return user.is_authenticated and user.role == 'doctor'
+
+def is_admin(user):
+    return user.is_authenticated and user.is_superuser == True
 
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -188,3 +190,133 @@ def patient_dashboard(request):
         'prediction_filter': prediction_filter,
         'predictions': predictions,
     })
+from django.contrib.auth.models import Group
+
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render
+from accounts.models import CustomUser
+from mri_classifier.models import MRIImage
+
+
+@login_required
+@user_passes_test(is_admin)
+def admin_dashboard(request):
+    total_patients = CustomUser.objects.filter(role='patient').count()
+    total_doctors = CustomUser.objects.filter(role='doctor').count()
+    total_radiologists = CustomUser.objects.filter(role='radiologist').count()
+    total_reports = MRIImage.objects.count()
+    recent_reports = MRIImage.objects.select_related('user').order_by('-uploaded_at')[:10]
+
+    return render(request, 'accounts/dashboard_admin.html', {
+        'total_patients': total_patients,
+        'total_doctors': total_doctors,
+        'total_radiologists': total_radiologists,
+        'total_reports': total_reports,
+        'recent_reports': recent_reports,
+    })
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.paginator import Paginator
+from django.db.models import Q
+from accounts.models import CustomUser
+from mri_classifier.models import MRIImage
+
+def is_admin(user):
+    return user.is_authenticated and user.is_superuser
+
+def paginate(request, queryset, per_page=10):
+    paginator = Paginator(queryset, per_page)
+    page_number = request.GET.get("page")
+    return paginator.get_page(page_number)
+
+@login_required
+@user_passes_test(is_admin)
+def admin_doctors_view(request):
+    search = request.GET.get("q", "")
+    status_filter = request.GET.get("status")
+
+    doctors = CustomUser.objects.filter(groups__name='doctor')
+    if search:
+        doctors = doctors.filter(Q(username__icontains=search) | Q(email__icontains=search))
+    if status_filter in ["active", "inactive"]:
+        doctors = doctors.filter(is_active=(status_filter == "active"))
+
+    page_obj = paginate(request, doctors)
+    return render(request, 'admin/doctors.html', {
+        'page_obj': page_obj,
+        'search': search,
+        'status_filter': status_filter
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def admin_radiologists_view(request):
+    search = request.GET.get("q", "")
+    status_filter = request.GET.get("status")
+
+    radiologists = CustomUser.objects.filter(groups__name='radiologist')
+    if search:
+        radiologists = radiologists.filter(Q(username__icontains=search) | Q(email__icontains=search))
+    if status_filter in ["active", "inactive"]:
+        radiologists = radiologists.filter(is_active=(status_filter == "active"))
+
+    page_obj = paginate(request, radiologists)
+    return render(request, 'admin/radiologists.html', {
+        'page_obj': page_obj,
+        'search': search,
+        'status_filter': status_filter
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def admin_patients_view(request):
+    search = request.GET.get("q", "")
+    status_filter = request.GET.get("status")
+
+    patients = CustomUser.objects.filter(groups__name='patient')
+    if search:
+        patients = patients.filter(Q(username__icontains=search) | Q(email__icontains=search))
+    if status_filter in ["active", "inactive"]:
+        patients = patients.filter(is_active=(status_filter == "active"))
+
+    page_obj = paginate(request, patients)
+    return render(request, 'admin/patients.html', {
+        'page_obj': page_obj,
+        'search': search,
+        'status_filter': status_filter
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def admin_reports_view(request):
+    search = request.GET.get("q", "")
+    prediction_filter = request.GET.get("prediction")
+
+    reports = MRIImage.objects.select_related("user").all()
+
+    if search:
+        reports = reports.filter(
+            Q(user__username__icontains=search) |
+            Q(prediction__icontains=search)
+        )
+    if prediction_filter:
+        reports = reports.filter(prediction__iexact=prediction_filter)
+
+    reports = reports.order_by("-uploaded_at")
+    page_obj = paginate(request, reports)
+    return render(request, 'admin/reports.html', {
+        'page_obj': page_obj,
+        'search': search,
+        'prediction_filter': prediction_filter,
+    })
+
+@login_required
+@user_passes_test(is_admin)
+def toggle_user_status(request, user_id):
+    user = get_object_or_404(CustomUser, id=user_id)
+    user.is_active = not user.is_active
+    user.save()
+    return redirect(request.META.get('HTTP_REFERER', '/'))

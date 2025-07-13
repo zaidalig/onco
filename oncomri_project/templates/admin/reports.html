@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4 text-theme">All MRI Reports</h2>
+
+  <!-- Filters -->
+  <form method="get" class="row mb-4 g-2">
+    <div class="col-md-4">
+      <input type="text" name="q" placeholder="Search by username or prediction" value="{{ query }}" class="form-control" />
+    </div>
+    <div class="col-md-4">
+      <select name="prediction" class="form-select">
+        <option value="">All Predictions</option>
+        {% for pred in predictions %}
+          <option value="{{ pred }}" {% if pred == prediction_filter %}selected{% endif %}>{{ pred }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <button class="btn btn-theme w-100">Apply Filters</button>
+    </div>
+  </form>
+
+  <!-- Table -->
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>Patient</th>
+          <th>Prediction</th>
+          <th>Confidence</th>
+          <th>Uploaded</th>
+          <th>Image</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for report in page_obj %}
+        <tr>
+          <td>{{ report.user.username }}</td>
+          <td>{{ report.prediction }}</td>
+          <td>{{ report.confidence }}%</td>
+          <td>{{ report.uploaded_at|date:"M d, Y H:i" }}</td>
+          <td><img src="{{ report.image.url }}" width="60" class="img-thumbnail" /></td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center">No reports found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="d-flex justify-content-center">
+    <nav>
+      <ul class="pagination">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?{% if query %}q={{ query }}&{% endif %}{% if prediction_filter %}prediction={{ prediction_filter }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% endif %}
+
+        <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?{% if query %}q={{ query }}&{% endif %}{% if prediction_filter %}prediction={{ prediction_filter }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+</div>
+{% endblock %}
